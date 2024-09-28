@@ -8,5 +8,5 @@ def get_api_key():
 
 def init_api_key():
     global API_KEY
-    with open("API_KEY", "r") as f:
+    with open("api_key", "r") as f:
         API_KEY = f.read()
