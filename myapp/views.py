@@ -9,6 +9,15 @@ from . secrets import get_api_key
 import requests
 import json
 
+# mysite/views.py
+from rest_framework import generics
+from .models import UnverifiedShelter
+from .serializers import UnverifiedShelterSerializer
+
+class UnverifiedShelterCreateView(generics.CreateAPIView):
+    queryset = UnverifiedShelter.objects.all()
+    serializer_class = UnverifiedShelterSerializer
+
 
 def get_most_recent_location():
     try:

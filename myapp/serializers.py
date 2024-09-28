@@ -1,5 +1,11 @@
 from rest_framework import serializers
-from .models import UserLocation, ShelterLocation
+from .models import UserLocation, ShelterLocation, UnverifiedShelter
+
+
+class UnverifiedShelterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UnverifiedShelter
+        fields = '__all__'
 
 
 class UserLocationSerializer(serializers.ModelSerializer):
