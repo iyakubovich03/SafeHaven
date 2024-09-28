@@ -2,23 +2,37 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+from django.core.exceptions import ValidationError
 
 class UnverifiedShelter(models.Model):
-    unique_identifier = models.CharField(max_length=100, unique=True, null=True, blank=True)
-    name = models.CharField(max_length=255)
-    address = models.CharField(max_length=255)
+    name = models.CharField(max_length=100)
+    address = models.CharField(max_length=200)
     latitude = models.FloatField()
     longitude = models.FloatField()
     total_capacity = models.IntegerField()
     available_beds = models.IntegerField()
-    available_food = models.BooleanField(default=False)
-    available_medical_supplies = models.BooleanField(default=False)
-    electricity = models.BooleanField(default=False)
+    available_food = models.BooleanField()
+    available_medical_supplies = models.BooleanField()
+    electricity = models.BooleanField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
-        return self.name
+    class Meta:
+        unique_together = ['address', 'latitude', 'longitude']
+
+    def clean(self):
+        existing_shelter = UnverifiedShelter.objects.filter(
+            address=self.address,
+            latitude=self.latitude,
+            longitude=self.longitude
+        ).exclude(pk=self.pk).first()
+
+        if existing_shelter:
+            raise ValidationError("A shelter with this address, latitude, and longitude already exists.")
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
     
 class UserLocation(models.Model):
    latitude = models.FloatField()

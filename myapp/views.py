@@ -1,5 +1,4 @@
 
-from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import UserLocation, ShelterLocation
@@ -10,7 +9,10 @@ import requests
 import json
 
 # mysite/views.py
-from rest_framework import generics
+from .models import UnverifiedShelter
+from .serializers import UnverifiedShelterSerializer
+
+from rest_framework import generics, status
 from .models import UnverifiedShelter
 from .serializers import UnverifiedShelterSerializer
 
@@ -18,6 +20,19 @@ class UnverifiedShelterCreateView(generics.CreateAPIView):
     queryset = UnverifiedShelter.objects.all()
     serializer_class = UnverifiedShelterSerializer
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UnverifiedShelterUpdateView(generics.RetrieveUpdateAPIView):
+    queryset = UnverifiedShelter.objects.all()
+    serializer_class = UnverifiedShelterSerializer
+    lookup_field = 'id'  
 
 def get_most_recent_location():
     try:
