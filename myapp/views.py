@@ -2,8 +2,8 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .models import UserLocation, ShelterLocation
-from .serializers import UserLocationSerializer, CoordinatesListSerializer
+from .models import UserLocation,ShelterLocation, ShelterResources
+from .serializers import UserLocationSerializer,CoordinatesListSerializer,ShelterResourcesSerializer,ShelterSerializer
 from . secrets import get_api_key
 
 import requests
@@ -57,11 +57,11 @@ class FetchAndSaveSheltersView(APIView):
         header = {
             "Content-Type": 'application/json',
             "X-Goog-Api-Key": apikey,
-            "X-Goog-FieldMask": "places.displayName,places.location"
+            "X-Goog-FieldMask": "places.displayName,places.location,places.name"
         }
         response = requests.post(url, headers=header, data=json.dumps(data))
         return response.json()
-
+    
     def get(self,request):
         coordinates=[]
         response = self.searchfunct()
@@ -70,11 +70,12 @@ class FetchAndSaveSheltersView(APIView):
             name=lipo.get('displayName').get('text')
             latitude=lipo.get('location').get('latitude')
             longitude=lipo.get('location').get('longitude')
+            place=lipo.get('name')
 
             if name is not None and latitude is not None and longitude is not None:
                 ShelterLocation.objects.update_or_create(
                     name=name,
-                    defaults={'latitude': latitude, 'longitude': longitude})
+                    defaults={'latitude': latitude, 'longitude': longitude,'place': place})
                 coordinates+=[{'latitude': latitude, 'longitude': longitude}]
         serializer = CoordinatesListSerializer(data={"coordinates": coordinates})
 
@@ -82,6 +83,60 @@ class FetchAndSaveSheltersView(APIView):
             return Response(serializer.data)  # Return serialized data in the response (when accessing the api should return)
         else:
             return Response(serializer.errors, status=400)
+class fetchShelterResrouces(APIView):
+    def get(self, request, *args, **kwargs):
+        name = request.GET.get('name')
+        if not name:
+            return Response({"error": "Shelter name is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            obj = ShelterResources.objects.get(name=name)
+            pot=ShelterLocation.objects.get(name=name)
+        except ShelterResources.DoesNotExist:
+            return Response({'error': 'Object not found'}, status=status.HTTP_404_NOT_FOUND)
+        serializer = ShelterResourcesSerializer(obj)
+        sero=ShelterSerializer(pot)
+        '''
+
+        shelter = ShelterResources.objects.get(name=name)
+        beds=shelter.beds
+        food=shelter.food
+        water=shelter.water
+        electricity=shelter.electricity
+        first_aid=shelter.first_aid'''
+        data= {
+                'name' : serializer.data.get('name'),
+                'food' : serializer.data.get('food'),
+                'beds' : serializer.data.get('beds'),
+                'water' : serializer.data.get('water'),
+                'electricity' : serializer.data.get('electricity'),
+                'first_aid': serializer.data.get('first_aid'),
+                'place' : sero.data.get("place")
+
+        }
+
+        return Response(data)# Return serialized data in the response (when accessing the api should return)
+    def post(self, request):
+        beds = request.data.get('beds')
+        food = request.data.get('food')
+        first_aid = request.data.get('first_aid')
+
+        name= request.data.get('name')
+        water=request.data.get('water')
+        electricity=request.data.get('electricity')
+
+        if beds is None or food is None or first_aid is None or name is None :
+            Response({"error": "Latitude and Longitude are required"}, status=status.HTTP_400_BAD_REQUEST)
+        resource,created=ShelterResources.objects.update_or_create(
+            defaults={'name': name, 'food': food, 'beds': beds, 'water': water,'electricity': electricity,'first_aid': first_aid},)
+
+
+        serializer = ShelterResourcesSerializer(resource)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
+
 
 
 
