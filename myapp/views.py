@@ -2,12 +2,12 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .models import UserLocation,ShelterLocation, ShelterResources
-from .serializers import UserLocationSerializer,CoordinatesListSerializer,ShelterResourcesSerializer,ShelterSerializer
+from .models import UserLocation,ShelterLocation, ShelterResources,UnverifiedShelter
+from .serializers import UserLocationSerializer,CoordinatesListSerializer,ShelterResourcesSerializer,ShelterSerializer,UnverifiedShelterSerializer
 from . secrets import get_api_key
-
 import requests
 import json
+from rest_framework import generics, status
 
 
 def get_most_recent_location():
@@ -15,7 +15,7 @@ def get_most_recent_location():
         location = UserLocation.objects.latest('timestamp')
         return location.latitude, location.longitude
     except UserLocation.DoesNotExist:
-        return None, None
+        return 33.7501, 84.3885
 class UpdateUserLocationView(APIView):
     def post(self, request, *args, **kwargs):
 
@@ -37,21 +37,17 @@ class UpdateUserLocationView(APIView):
 
 class FetchAndSaveSheltersView(APIView):
     def searchfunct(self):
-        latitude,longitude = get_most_recent_location()
+        try:
+            location = UserLocation.objects.latest('timestamp')
+            latitude,longitude= location.latitude, location.longitude
+        except UserLocation.DoesNotExist:
+            latitude,longitude=33.7501, 84.3885
 
         url="https://places.googleapis.com/v1/places:searchText"
         apikey=get_api_key()
         data={
-          "textQuery": "emergency shelters",
-          "locationBias": {
-            "circle": {
-              "center": {
-                "latitude": latitude,
-                "longitude": longitude
-              },
-              "radius": 500.0
-            }
-          }
+          "textQuery": "emergency shelters at"+f"{latitude} , {longitude}",
+    
         }
 
         header = {
@@ -72,11 +68,12 @@ class FetchAndSaveSheltersView(APIView):
             longitude=lipo.get('location').get('longitude')
             place=lipo.get('name')
 
+
             if name is not None and latitude is not None and longitude is not None:
                 ShelterLocation.objects.update_or_create(
                     name=name,
                     defaults={'latitude': latitude, 'longitude': longitude,'place': place})
-                coordinates+=[{'latitude': latitude, 'longitude': longitude}]
+                coordinates+=[{'latitude': latitude, 'longitude': longitude,'place':place,"name":name}]
         serializer = CoordinatesListSerializer(data={"coordinates": coordinates})
 
         if serializer.is_valid():
@@ -133,6 +130,25 @@ class fetchShelterResrouces(APIView):
 
         serializer = ShelterResourcesSerializer(resource)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class UnverifiedShelterCreateView(generics.CreateAPIView):
+    queryset = UnverifiedShelter.objects.all()
+    serializer_class = UnverifiedShelterSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UnverifiedShelterUpdateView(generics.RetrieveUpdateAPIView):
+    queryset = UnverifiedShelter.objects.all()
+    serializer_class = UnverifiedShelterSerializer
+    lookup_field = 'id'  
+
 
 
 
