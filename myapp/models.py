@@ -2,6 +2,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 
 
 class UserLocation(models.Model):
@@ -36,29 +37,30 @@ class ShelterResources(models.Model):
 
 class UnverifiedShelter(models.Model):
     name = models.CharField(max_length=100)
-    address = models.CharField(max_length=200)
     latitude = models.FloatField()
     longitude = models.FloatField()
-    total_capacity = models.IntegerField()
+    total_capacity = models.IntegerField(default=0)
+
     available_beds = models.IntegerField()
     available_food = models.BooleanField()
     available_medical_supplies = models.BooleanField()
     electricity = models.BooleanField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    water = models.BooleanField()
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(default=timezone.now)
+
 
     class Meta:
-        unique_together = ['address', 'latitude', 'longitude']
+        unique_together = ['latitude', 'longitude']
 
     def clean(self):
         existing_shelter = UnverifiedShelter.objects.filter(
-            address=self.address,
             latitude=self.latitude,
             longitude=self.longitude
         ).exclude(pk=self.pk).first()
 
         if existing_shelter:
-            raise ValidationError("A shelter with this address, latitude, and longitude already exists.")
+            raise ValidationError("A shelter with this address already exists.")
 
     def save(self, *args, **kwargs):
         self.clean()
