@@ -156,7 +156,11 @@ class UnverifiedShelterUpdateView(generics.RetrieveUpdateAPIView):
     lookup_field = 'id'  
 
 
-
+class UnverifiedShelterListView(APIView):
+    def get(self, request):
+        shelters = UnverifiedShelter.objects.all()
+        serializer = UnverifiedShelterSerializer(shelters, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 
