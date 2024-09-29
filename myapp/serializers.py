@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import UserLocation, ShelterLocation,ShelterResources, UnverifiedShelter
+from .models import UserLocation, ShelterLocation,ShelterResources,UnverifiedShelter
 
 
 class UserLocationSerializer(serializers.ModelSerializer):
@@ -28,6 +28,8 @@ class ShelterResourcesSerializer(serializers.ModelSerializer):
     class Meta:
         model = ShelterResources
         fields = ['name','food','beds','water','electricity', 'first_aid']
+
+
 class UnverifiedShelterSerializer(serializers.ModelSerializer):
     location = serializers.SerializerMethodField()
     amenities = serializers.SerializerMethodField()

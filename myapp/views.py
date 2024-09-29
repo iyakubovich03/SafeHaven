@@ -131,6 +131,7 @@ class fetchShelterResrouces(APIView):
         serializer = ShelterResourcesSerializer(resource)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
 class UnverifiedShelterCreateView(APIView):
     def post(self, request):
         serializer = UnverifiedShelterSerializer(data=request.data)
