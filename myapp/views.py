@@ -16,17 +16,43 @@ from rest_framework import generics, status
 from .models import UnverifiedShelter
 from .serializers import UnverifiedShelterSerializer
 
-class UnverifiedShelterCreateView(generics.CreateAPIView):
-    queryset = UnverifiedShelter.objects.all()
-    serializer_class = UnverifiedShelterSerializer
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .models import UnverifiedShelter
+from .serializers import UnverifiedShelterSerializer
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+class UnverifiedShelterListView(APIView):
+    def get(self, request):
+        shelters = UnverifiedShelter.objects.all()
+        serializer = UnverifiedShelterSerializer(shelters, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
+class UnverifiedShelterCreateView(APIView):
+    def post(self, request):
+        serializer = UnverifiedShelterSerializer(data=request.data)
         if serializer.is_valid():
-            self.perform_create(serializer)
-            headers = self.get_success_headers(serializer.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+            data = request.data  # Use request.data instead of serializer.validated_data
+            UnverifiedShelter.objects.create(
+                name=data['name'],
+                latitude=data['location']['latitude'],
+                longitude=data['location']['longitude'],
+                available_beds=data['amenities']['numberOfBeds'],
+                available_food=data['amenities']['food'],
+                available_medical_supplies=data['amenities']['firstAid'],
+                water=data['amenities']['water'],
+                electricity=data['amenities']['electricity'],
+            )
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
+
 
 
 class UnverifiedShelterUpdateView(generics.RetrieveUpdateAPIView):

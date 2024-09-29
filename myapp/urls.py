@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import UpdateUserLocationView, FetchAndSaveSheltersView,fetchShelterResrouces, UnverifiedShelterCreateView, UnverifiedShelterUpdateView
+from .views import UpdateUserLocationView, FetchAndSaveSheltersView,fetchShelterResrouces, UnverifiedShelterCreateView, UnverifiedShelterUpdateView, UnverifiedShelterListView
 
 urlpatterns = [
     path('update-location/', UpdateUserLocationView.as_view(), name='update-location'),
@@ -7,5 +7,6 @@ urlpatterns = [
     path('unverified-shelters/', UnverifiedShelterCreateView.as_view(), name='unverified-shelter-create'),
     path('unverified-shelters/<int:id>/', UnverifiedShelterUpdateView.as_view(), name='unverified-shelter-update'),
     path('shelter-resources/',fetchShelterResrouces.as_view(), name='shelter-resources'),
+    path('api/unverified-shelters/', UnverifiedShelterListView.as_view(), name='unverified-shelter-list'),
 ]
 
