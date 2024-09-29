@@ -1,5 +1,4 @@
 
-from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import UserLocation,ShelterLocation, ShelterResources,UnverifiedShelter
@@ -9,6 +8,57 @@ import requests
 import json
 from rest_framework import generics, status
 
+# mysite/views.py
+from .models import UnverifiedShelter
+from .serializers import UnverifiedShelterSerializer
+
+from rest_framework import generics, status
+from .models import UnverifiedShelter
+from .serializers import UnverifiedShelterSerializer
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .models import UnverifiedShelter
+from .serializers import UnverifiedShelterSerializer
+
+class UnverifiedShelterListView(APIView):
+    def get(self, request):
+        shelters = UnverifiedShelter.objects.all()
+        serializer = UnverifiedShelterSerializer(shelters, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
+class UnverifiedShelterCreateView(APIView):
+    def post(self, request):
+        serializer = UnverifiedShelterSerializer(data=request.data)
+        if serializer.is_valid():
+            data = request.data  # Use request.data instead of serializer.validated_data
+            UnverifiedShelter.objects.create(
+                name=data['name'],
+                latitude=data['location']['latitude'],
+                longitude=data['location']['longitude'],
+                available_beds=data['amenities']['numberOfBeds'],
+                available_food=data['amenities']['food'],
+                available_medical_supplies=data['amenities']['firstAid'],
+                water=data['amenities']['water'],
+                electricity=data['amenities']['electricity'],
+            )
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
+
+
+
+class UnverifiedShelterUpdateView(generics.RetrieveUpdateAPIView):
+    queryset = UnverifiedShelter.objects.all()
+    serializer_class = UnverifiedShelterSerializer
+    lookup_field = 'id'  
 
 def get_most_recent_location():
     try:
