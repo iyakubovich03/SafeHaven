@@ -8,6 +8,7 @@ from . secrets import get_api_key
 import requests
 import json
 from rest_framework import generics, status
+from geopy.distance import geodesic
 
 
 def get_most_recent_location():
@@ -147,7 +148,11 @@ class UnverifiedShelterCreateView(APIView):
                 water=data['amenities']['water'],
                 electricity=data['amenities']['electricity'],
             )
+            userLoc=get_most_recent_location
+            shelLoc = (data['location']['latitude'],data['location']['longitude'])
+            distance_km = geodesic(userLoc, shelLoc).km
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
