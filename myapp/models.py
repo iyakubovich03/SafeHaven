@@ -1,7 +1,7 @@
 
 from django.db import models
 from django.contrib.auth.models import User
-
+from django.utils import timezone
 from django.core.exceptions import ValidationError
 
 class UnverifiedShelter(models.Model):
@@ -14,8 +14,8 @@ class UnverifiedShelter(models.Model):
     available_food = models.BooleanField()
     available_medical_supplies = models.BooleanField()
     electricity = models.BooleanField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
         unique_together = ['address', 'latitude', 'longitude']
