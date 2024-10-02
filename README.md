@@ -1,7 +1,7 @@
 Demo of app: https://lnkd.in/e_fui4-p
 front end + back end repo: https://lnkd.in/ePDVEwff
 
-I created all backend fucntioanlly of this applciation in this repo through djnago. 
+I created all the backend functionality of this application in this repo through Django. 
 Personally handled:
 Shelter Information: The backend will interface with databases that store real-time updates on shelter availability, including beds, food, water, and medical supplies.
 APIs for Real-time Data: To ensure real-time updates, the backend can integrate with external APIs for live weather conditions, road closures, and evacuation routes.
