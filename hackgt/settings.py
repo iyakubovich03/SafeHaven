@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'corsheaders',
     'myapp',
     'corsheaders',
 ]
@@ -51,7 +52,19 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+
 ]
+
+
+
+# CORS_ALLOWED_ORIGINS= [
+#    "http://128.61.116.35:8081"
+# ]
+
+ALLOWED_HOSTS = ['128.61.116.35']
+
+
+
 CORS_ALLOW_ALL_ORIGINS = True
 
 ROOT_URLCONF = 'hackgt.urls'
