@@ -1,5 +1,5 @@
 Demo of app: https://lnkd.in/e_fui4-p
-front end + back end repo: https://lnkd.in/ePDVEwff
+front end + back end repo: https://github.com/stefan-s-e/SafeHaven/
 
 I created all the backend functionality of this application in this repo through Django. 
 Personally handled:
